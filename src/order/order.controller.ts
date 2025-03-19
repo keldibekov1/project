@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -20,8 +20,28 @@ export class OrderController {
   @Get()
   @ApiOperation({ summary: 'Barcha buyurtmalarni olish' })
   @ApiResponse({ status: 200, description: 'Buyurtmalar royxati', type: [Order] })
-  findAll() {
-    return this.orderService.findAll();
+  @ApiQuery({ name: 'status', required: false, description: 'Buyurtma statusi boyicha filterlash' })
+  @ApiQuery({ name: 'sortBy', required: false, description: 'Sort qilish maydoni (default: createdAt)' })
+  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], description: 'Sort tartibi (asc/desc)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Sahifa raqami (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Har bir sahifada nechta element (default: 10)' })
+  findAll(
+    @Query('status') status?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('order') order?: 'asc' | 'desc',
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ) {
+    const filter: any = {};
+    if (status) filter.status = status;
+
+    return this.orderService.findAll(
+      filter,
+      sortBy || 'createdAt', 
+      order || 'desc',
+      Number(page) || 1, 
+      Number(limit) || 10 
+    );
   }
 
   @Get(':id')

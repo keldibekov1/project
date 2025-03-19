@@ -14,9 +14,24 @@ export class OrderService {
     return order.save();
   }
 
-  async findAll(): Promise<Order[]> {
-    return this.orderModel.find();
+  async findAll(
+    filter: any,
+    sortBy: string,
+    order: 'asc' | 'desc',
+    page: number,
+    limit: number
+  ): Promise<Order[]> {
+    const skip = (page - 1) * limit;
+    const sortOrder = order === 'asc' ? 1 : -1;
+  
+    return this.orderModel
+      .find(filter)
+      .sort({ [sortBy]: sortOrder })
+      .skip(skip)
+      .limit(limit)
+      .exec();
   }
+  
 
   async findOne(id: string): Promise<Order> {
     const order = await this.orderModel.findById(id).populate('elon').exec();

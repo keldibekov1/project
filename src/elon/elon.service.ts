@@ -14,9 +14,26 @@ export class ElonService {
     return elon.save();
   }
 
-  async findAll(): Promise<Elon[]> {
-    return this.elonModel.find().populate('category').exec();
+  async findAll(
+    filter: any,
+    sortBy: string,
+    order: 'asc' | 'desc',
+    page: number,
+    limit: number
+  ): Promise<Elon[]> {
+    const skip = (page - 1) * limit;
+    const sortOrder = order === 'asc' ? 1 : -1;
+  
+    return this.elonModel
+      .find(filter)
+      .sort({ [sortBy]: sortOrder })
+      .skip(skip)
+      .limit(limit)
+      .populate('category')
+      .exec();
   }
+  
+  
 
   async findOne(id: string): Promise<Elon> {
     const elon = await this.elonModel.findById(id).populate('category').exec();
